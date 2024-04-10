@@ -1,0 +1,43 @@
+# 작업형 1 예시 문제 
+# mtcars 데이터셋(data/mtcars)의 qsec컬럼을 최소최대 척도 (Min-Max Scale)로 변환한 후 0.5보다 큰 값을 가지는 레코드 수를 구하시오. 
+# dataset 위치 : data/mtcars.csv  
+
+import pandas as pd 
+import numpy as np 
+
+df1 = pd.read_csv(r'C:/빅데이터분석기사 실기 모의고사/불러오기 파일들/mtcars.csv')
+print(df1)
+
+print(df1['qsec'].head(3))
+
+from sklearn.preprocessing import minmax_scale 
+
+df1['qsec'] = minmax_scale(df1['qsec'])
+
+print(df1['qsec'].head(3)) 
+
+print(df1['qsec'] > 0.5)
+# True값만 더해서 결과값 반환 
+
+# 최종제출 전에 중간에 한 프린트문은 주석 처리 
+# 주석처리 단축키 : 컨트롤 슬러시  
+
+
+# 방법2
+
+# 자체적으로 함수 만들기 
+
+def minmax(df1) : 
+    df1 = (df1 - min(df1)) / (max(df1) - min(df1))
+    return df1  
+
+df1['qsec'] = minmax(df1['qsec'])
+
+print(df1['qsec'].head(3)) 
+
+print(df1[df1['qsec'] > 0.5]) 
+
+print(len(df1[df1['qsec'] > 0.5]))
+
+
+
