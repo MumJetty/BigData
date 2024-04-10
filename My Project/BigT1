@@ -1,8 +1,70 @@
 
-
 ======================================
 
 (4/10)
+
+------------------------------------------------------
+
+### 작업형2 예시 문제 (타이타닉) 
+
+# 아래는 타이타닉호 탑승자 생존과 관련한 데이터. 주어진 데이터를 이용하여 예측모형 만들고 CSV파일 생성하시오
+
+# (가) 제공 데이터 목록 
+  #(1) titanic3_y_train.csv : 탑승자의 생존 여부 데이터(학습용), csv 형식의 파일 
+  #(2) titanic3_X_train.csv , titanic3_X_test.csv : 탑승자의 주요 속성 (학습용 및 평가용), csv 형식의 파일 
+
+# (나) 데이터 형식 및 내용 
+  #(1) titanic3_y_train.csv (785명 데이터) 
+       # ID : 각 탑승자 고유번호 // survived : 생존 여부 (0: 사망 , 1: 생존) 
+  #(2) titanic3_X_train.csv (785명 학습용 데이터) , titanic3_X_test.csv (524명 평가용 데이터)  
+
+# 탑승자 785명에 대한 학습용 데이터(titanic3_y_train.csv , titanic3_X_train.csv)를 이용하여 , 생존 여부 예측모형을 만든 후 
+# 이를 평가용 데이터(titanic3_X_test.csv)에 적용하여 얻은 524명 탑승자의 생존 여부 예측값을 CSV 파일로 생성하시오. 
+# (제출한 모델의 성능은 F1-score 평가지표에 따라 채점) 
+
+# <제출형식> 
+# ID : 각 탑승자의 고유번호 // survived : 생존 여부 (0: 사망 , 1: 생존)  
+
+# <유의사항>
+# 성능이 우수한 예측모형을 구축하기 위해서 
+# 적절한 데이터 전처리 , Feature Engineering , 분류 알고리즘 사용 , 초매개변수 최적화 , 모형 앙상블 등 수반
+
+
+import pandas as pd
+
+X_train = pd.read_csv(r'C:\빅데이터분석기사 실기 모의고사\data\모의고사\01회/titanic3_X_train.csv')
+X_test = pd.read_csv(r'C:\빅데이터분석기사 실기 모의고사\data\모의고사\01회/titanic3_X_test.csv')
+y_train = pd.read_csv(r'C:\빅데이터분석기사 실기 모의고사\data\모의고사\01회/titanic3_y_train.csv')
+
+print(X_train.head())
+print(X_test.head())
+print(y_train.head())
+
+print(X_train.info())
+print(X_test.info())
+print(y_train.info())
+
+print(X_train.describe())
+print(X_test.describe())
+print(y_train.describe())
+
+
+ID = X_test['ID'].copy()
+
+X_train = X_train.drop(columns = ['ID','name'])
+X_test = X_test.drop(columns = ['ID','name'])
+y_train = y_train.drop(columns = ['ID'])
+
+X_train.isna().sum()
+X_test.isna().sum() 
+
+
+
+------------------------------------------------------
+
+
+
+
 
 
 
