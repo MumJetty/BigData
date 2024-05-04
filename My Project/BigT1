@@ -59,6 +59,39 @@ X_train.isna().sum()
 X_test.isna().sum() 
 
 
+# 결측일 조건 
+cond_na = X_train['age'].isna() 
+
+
+# 피어슨 상관계수: +1이면 양의 상관관계, -1이면 음의 상관관계, 0의 경우 상관관계 갖지 않음
+
+from scipy.stats import pearsonr 
+pearsonr(y_train['survived'][~cond_na],X_train['age'][~cond_na])
+
+# age는 탑승자의 나이를 의미하고 survived와 상관관계가 낮으므로 컬럼을 삭제 
+X_train = X_train.drop('age', axis = 1) 
+X_test = X_test.drop('age', axis = 1) 
+
+
+# 교재풀이 때문에 확인해 봄
+y_train.isna().sum()
+
+cond_na = X_train['fare'].isna() 
+
+X_train = X_train[~cond_na]
+y_train = y_train[~cond_na]
+
+
+
+
+
+
+
+
+
+
+
+
 
 ------------------------------------------------------
 
