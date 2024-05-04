@@ -76,16 +76,236 @@ X_test = X_test.drop('age', axis = 1)
 # 교재풀이 때문에 확인해 봄
 y_train.isna().sum()
 
+
+# fare는 티겟요금을 의미하고, train에만 존재하므로 레코드를 삭제함 
+# 결측일 조건 
 cond_na = X_train['fare'].isna() 
 
+# 행 삭제 
 X_train = X_train[~cond_na]
 y_train = y_train[~cond_na]
 
 
+# cabin은 선실번호를 의미하고 train은 레코드의 78%, test는 레코드의 76%가 결측이므로 컬럼을 삭제 
+
+# cabin 컬럼 삭제 
+X_train = X_train.drop('cabin' , axis = 1) 
+X_test = X_test.drop('cabin', axis =1) 
+
+
+# ebarked는 탑승한 곳을 의미하고, 범주형(C,Q,S)으로, 최다빈도를 가지는 범주로 대체함 
+
+top = X_train['embarked'].value_counts().idxmax() 
+
+
+print(top)
+
+
+# 대치 
+
+X_train['embarked'] = X_train['embarked'].fillna(top) 
+X_test['embarked'] = X_test['embarked'].fillna(top)  
 
 
 
+# >> 카테고리형 컬럼 전처리 
 
+# 문자열(object) 컬럼들의 유일값 수 확인  
+
+print(X_train.select_dtypes('object').nunique())
+print(X_test.select_dtypes('object').nunique())
+
+
+# 컬럼 중 sex컬럼, 여성에 대한 일부 카테고리가 F로 되어있음 
+
+X_train['sex'].value_counts()
+X_test['sex'].value_counts()
+
+
+# train, test 모두 'F'를 'female'로 통일 
+
+X_train['sex'] = X_train['sex'].map({'male':'male','female':'female','F':'female'}) 
+X_test['sex'] = X_test['sex'].map({'male':'male','female':'female','F':'female'})
+
+
+# ticket 컬럼 
+# 대다수가 중복되지 않으므로 (어느 한 MC로 그룹핑이 안되고 특징이 없음), 컬럼을 삭제하는 것으로 결정 
+
+X_train = X_train.drop('ticket', axis = 1) 
+X_test = X_test.drop('ticket', axis = 1) 
+
+
+# >>> 수치형 컬럼 전처리 
+# pclass 컬럼 
+# 수치형으로 인식되지만 1,2,3등석 정보를 각 1,2,3으로 저장한 것으로 
+# 카테고리의 의미를 가지는 컬럼 (즉, 문자가 문자가 아닌 숫자 형태로 되어있음) 
+# dtype 변경 후 파생변수 pclass_gp에 할당하고 기존 컬럼 삭제  
+
+X_train['pclass_gp'] = X_train['pclass'].astype('object')
+X_test['pclass_gp'] = X_test['pclass'].astype('object') 
+
+
+# 데이터 타입 변경한 것 변수에 담기를 완료 후 기존 것 삭제 
+
+X_train = X_train.drop('pclass', axis = 1)
+X_test = X_test.drop('pclass', axis = 1) 
+
+
+# sibsp, parch 컬럼 
+# sibsp는 동승한 형제 또는 배우자수, parch는 동승한 부모 또는 자녀의 수이므로 
+# 두 컬럼을 합한 파생변수 fam을 생성하고 이는 동승한 가족 인원을 의미  
+
+X_train['fam'] = X_train['sibsp'] + X_train['parch'] 
+X_test['fam'] = X_test['sibsp'] + X_test['parch'] 
+
+
+# 파생변수 생성 후 기존 것 삭제 
+
+X_train = X_train.drop(['sibsp','parch'], axis = 1)
+X_test = X_test.drop(['sibsp','parch'], axis = 1) 
+
+
+from sklearn.model_selection import train_test_split 
+
+# >>> 데이터 분할 
+
+# X_train과 y_train을 학습용 (X_TRAIN, y_TRAIN)과 검증용 (X_VAL, y_VAL)로 분할 
+# ( , , , ,) : 변수에 담기 
+
+X_TRAIN, X_VAL, y_TRAIN, y_VAL = train_test_split(X_train, y_train, random_state = 1234, test_size = 0.1) 
+
+
+# 분할 후 shpae 확인 
+
+print(X_TRAIN.shape)
+print(X_VAL.shape)
+print(y_TRAIN.shape)
+print(y_VAL.shape)
+
+
+# 인코딩 - 원-핫 인코딩 수행 
+# 카테고리형 컬럼(object)에 대하여 원핫인코딩 수행 
+# 원핫인코딩 : 범주형 데이터를 숫자로 변환하여, 딥러닝 모델에 적용 가능하게 변환함 
+# (ex) 개 1000, 고양이 0100, 원숭이 0010, 돼지 0001 
+
+from sklearn.preprocessing import OneHotEncoder 
+
+# 인코딩 할 카테고리형(object) 컬럼만 별도 저장   
+
+X_TRAIN_category = X_TRAIN.select_dtypes('object').copy() 
+X_VAL_category = X_VAL.select_dtypes('object').copy()
+X_TEST_category = X_test.select_dtypes('object').copy() 
+
+
+# 원-핫 인코딩 
+# 디폴트는 sparse = True이며 매트릭스 리턴 , sparse = False이면 배열 리턴 
+# fit 메서드: 모델을 학습시킬 때 사용함. // 머신러닝이 데이터에 머신러닝 모델을 맞추는 것(fit) 
+# transform: fit을 통해 세운 기준(모델)으로 맞춰서 변형하는 함수  
+
+enc = OneHotEncoder(sparse = False).fit(X_TRAIN_category)
+
+X_TRAIN_OH = enc.transform(X_TRAIN_category)
+X_VAL_OH = enc.transform(X_VAL_category) 
+X_TEST_OH = enc.transform(X_TEST_category) 
+
+
+# >>> 스케일링 
+# 스케일링 ;; 카테고리형이 아닌 것, 숫자 관련된 것. 수치형. 
+# StandardScaler(): 표준화. 평균이 0이고 분산 1인 정규분포 만드는 것. z-score  
+
+from sklearn.preprocessing import StandardScaler 
+
+# 스케일링할 컬럼만 별도 저장 
+# select_dtypes() 메서드의 exclude 옵션은 해당 dtype을 제외한 모든 dtypes를 추출할 때 사용 
+
+X_TRAIN_conti = X_TRAIN.select_dtypes(exclude = 'object').copy() 
+X_VAL_conti = X_VAL.select_dtypes(exclude = 'object').copy() 
+X_TEST_conti = X_test.select_dtypes(exclude = 'object').copy() 
+
+
+# TRAIN 데이터 기준으로 스케일링 함 
+
+scale = StandardScaler().fit(X_TRAIN_conti) 
+
+# Z-점수 표준화 
+# ; transform에서 평균, 분산, 표준편차 등 가지고, 거기에 때리면서 구하면서 표준화 
+
+X_TRAIN_STD = scale.transform(X_TRAIN_conti)
+X_VAL_STD = scale.transform(X_VAL_conti)
+X_TEST_STD = scale.transform(X_TEST_conti) 
+
+
+# >>> 입력 데이터셋 준비  
+
+import numpy as np 
+
+# 인코딩과 스케일링 된 넘파이 배열 연결  
+
+X_TRAIN = np.concatenate([X_TRAIN_OH, X_TRAIN_STD],axis = 1) 
+X_VAL = np.concatenate([X_VAL_OH, X_VAL_STD],axis = 1) 
+
+
+# y를 1차원 넘파이 배열로 평탄화 
+# ravel: 1차원 배열로 평평하게 펴주는 함수 
+
+# (참고) 
+# 딕셔너리는 key(), values() 
+# 그 중 키만 뽑을 때 : key()
+# 값만 뽑을 때 : values() 
+# 키, 값 쌍으로 뽑고 싶을 때 : items() 
+
+
+# 1차원 넘파이 배열로 평탄화 
+y_TRAIN = y_TRAIN.values.ravel() 
+y_VAL = y_VAL.values.ravel() 
+
+
+# 모델 학습 
+
+from sklearn.ensemble import RandomForestClassifier 
+
+
+ 랜덤 포레스트 
+
+rf = RandomForestClassifier(n_estimators = 500, max_depth = 3, min_samples_leaf = 10, max_features = 'sqrt', random_state = 2022) 
+
+model_rf = rf.fit(X_TRAIN, y_TRAIN) 
+
+# 성능평가(기준:f1-score) 통한 모델 선정 // 단, 여기서는 랜덤포레스트만 사용함 
+
+from sklearn.metrics import f1_score 
+
+
+# 검증용 데이터셋을 통한 예측 
+
+pred_rf = model_rf.predict(X_VAL) 
+
+
+# f1-score 계산 
+
+f1_rf = f1_score(y_VAL, pred_rf)
+
+print(f1_rf)
+
+
+# 결과 제출하기 
+
+X_TEST = np.concatenate([X_TEST_OH, X_TEST_STD],axis = 1)
+
+y_pred = model_rf.predict(X_TEST)
+
+
+# 문제에서 요구하는 형태로 변환 
+
+obj = {'ID':ID, 'survived':y_pred} 
+
+result = pd.DataFrame(obj) 
+
+
+# 12345.csv로 저장하기
+# index = False 시 인덱스를 포함하지 않고 저장 
+
+result.to_csv("12345.csv",index = False) 
 
 
 
