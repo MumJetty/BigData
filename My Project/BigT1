@@ -49,6 +49,7 @@ print(X_test.describe())
 print(y_train.describe())
 
 
+# 결과 제출 시 X_test의 컬럼이 필요하기 때문에 별도 저장 
 ID = X_test['ID'].copy()
 
 X_train = X_train.drop(columns = ['ID','name'])
