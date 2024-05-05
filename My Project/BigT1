@@ -269,7 +269,7 @@ y_TRAIN = y_TRAIN.values.ravel()
 y_VAL = y_VAL.values.ravel() 
 
 
-# 모델 학습 
+# >>> 모델 학습 
 
 from sklearn.ensemble import RandomForestClassifier 
 
