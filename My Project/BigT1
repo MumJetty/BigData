@@ -237,6 +237,7 @@ scale = StandardScaler().fit(X_TRAIN_conti)
 
 # Z-점수 표준화 
 # ; transform에서 평균, 분산, 표준편차 등 가지고, 거기에 때리면서 구하면서 표준화 
+# transform: fit을 통해 세운 기준(모델)으로 맞춰서 변형하는 함수  
 
 X_TRAIN_STD = scale.transform(X_TRAIN_conti)
 X_VAL_STD = scale.transform(X_VAL_conti)
