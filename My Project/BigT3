@@ -1,1 +1,91 @@
-ZZZ
+□ 작업형 3 예시 문제 
+
+# 아래는 호주의 기상 관측소들의 일자별 기상 정보와 강수 여부에 관련한 데이터의 일부이다. 
+# 주어진 데이터를 이용하여 예측 모형을 만들고 아래에 따라 CSV 파일을 생성하시오. 
+
+# (가) 제공 데이터 목록 
+   # (1) weatherAUS_y_train.csv : 일자별 강수 여부 데이터(학습용), csv 형식의 파일 
+   # (2) weatherAUS_x_train.csv , weatherAUS_x_test.csv : 일자별 호주 기상 데이터(학습용 및 평가용), csv 형식의 파일 
+
+# (나) 데이터 형식 및 내용 
+   # (1) weatherAUS_y_train.csv (11,714 데이터)   
+       # Date : 날짜 // RainTommorow : 강수 여부 ("No": 오지 않음 , "Yes": 옴) 
+   # (2) weatherAUS_x_train.csv (11,714 데이터) , weatherAUS_x_test.csv (5,794 데이터)  
+
+# 11,714일간의 학습용 데이터(weatherAUS_y_train.csv , weatherAUS_x_train.csv)를 이용하여, 기상 여부 예측 모형을 만든 후  
+# 이를 평가용 데이터(weatherAUS_x_test.csv)에 적용하여 얻은 5,794일의 기상 여부 예측값을 CSV 파일로 생성하시오 
+# (제출한 모델의 성능은 AUC 평가지표에 따라 채점) 
+
+# <제출형식> 
+# Date : 날짜 // RainTommorow_Prob : 강수 여부 예측 확률 
+
+# <유의사항>
+# 성능이 우수한 예측모형을 구축하기 위해서 
+# 적절한 데이터 전처리 , Feature Engineering , 분류 알고리즘 사용 , 초매개변수 최적화 , 모형 앙상블 등 수반
+# 시계열성을 고려하지 않는다.  
+
+
+import pandas as pd  
+
+X_train = pd.read_csv(r'C:\빅데이터분석기사 실기 모의고사\data\모의고사\03회/weatherAUS_x_train.csv')
+X_test = pd.read_csv(r'C:\빅데이터분석기사 실기 모의고사\data\모의고사\03회/weatherAUS_x_test.csv')
+y_train = pd.read_csv(r'C:\빅데이터분석기사 실기 모의고사\data\모의고사\03회/weatherAUS_y_train.csv')
+
+
+print(X_train.head())
+print(X_test.head())
+print(y_train.head())
+
+
+print(X_train.info())
+print(X_test.info())
+print(y_train.info())
+
+
+print(X_train.describe())
+print(X_test.describe())
+print(y_train.describe())
+
+
+# 결과 제출 시 X_test의 컬럼이 필요하기 때문에 별도 저장 
+
+Date = X_test['Date'].copy()
+
+
+# 별도 저장한 컬럼 및 불필요한 컬럼 삭제 
+X_train = X_train.drop(columns = 'Date' )
+X_test = X_test.drop(columns = ['Date'])
+y_train = y_train.drop(columns = 'Date') 
+
+
+# >>> 결측치 처리 
+
+# 결측치 확인 
+X_train.isna().sum()
+
+X_test.isna().sum() 
+
+# 교재풀이 때문에 확인해 봄
+y_train.isna().sum()
+
+
+# train에서 500개가 넘는 결측치가 있는 컬럼은 삭제 
+
+# 결측치가 500개가 넘는 조건 
+cond_na500 = (X_train.isna().sum() >=500)
+
+
+# 500개가 넘는 컬럼명 
+
+col_na500 = X_train.columns[cond_na500]   
+
+
+# (모은) 컬럼 삭제 
+
+X_train = X_train.drop(col_na500, axis =1)
+X_test = X_test.drop(col_na500, axis =1)
+
+
+
+
+
