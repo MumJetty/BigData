@@ -234,6 +234,7 @@ X_TEST_conti = X_test.select_dtypes(exclude = 'object').copy()
 
 scale = StandardScaler().fit(X_TRAIN_conti) 
 
+
 # Z-점수 표준화 
 # ; transform에서 평균, 분산, 표준편차 등 가지고, 거기에 때리면서 구하면서 표준화 
 
