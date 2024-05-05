@@ -280,6 +280,7 @@ rf = RandomForestClassifier(n_estimators = 500, max_depth = 3, min_samples_leaf 
 
 model_rf = rf.fit(X_TRAIN, y_TRAIN) 
 
+
 # 성능평가(기준:f1-score) 통한 모델 선정 // 단, 여기서는 랜덤포레스트만 사용함 
 
 from sklearn.metrics import f1_score 
