@@ -223,6 +223,7 @@ from sklearn.preprocessing import StandardScaler
 
 # 스케일링할 컬럼만 별도 저장 
 # select_dtypes() 메서드의 exclude 옵션은 해당 dtype을 제외한 모든 dtypes를 추출할 때 사용 
+# 테스트는 스플릿이 안되어 있으므로 정의변수는 대문자, 할당 시에는 소문자 사용 
 
 X_TRAIN_conti = X_TRAIN.select_dtypes(exclude = 'object').copy() 
 X_VAL_conti = X_VAL.select_dtypes(exclude = 'object').copy() 
