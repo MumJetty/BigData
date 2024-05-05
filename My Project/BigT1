@@ -306,6 +306,7 @@ y_pred = model_rf.predict(X_TEST)
 
 
 # 문제에서 요구하는 형태로 변환 
+# <제출형식> ID , survived 
 
 obj = {'ID':ID, 'survived':y_pred} 
 
