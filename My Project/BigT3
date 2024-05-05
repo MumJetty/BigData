@@ -86,6 +86,3 @@ X_train = X_train.drop(col_na500, axis =1)
 X_test = X_test.drop(col_na500, axis =1)
 
 
-
-
-
