@@ -86,3 +86,231 @@ X_train = X_train.drop(col_na500, axis =1)
 X_test = X_test.drop(col_na500, axis =1)
 
 
+# train에서 100개 미만의 결측치가 있는 컬럼은 결측치 대체 
+
+# 결측치가 100개 미만의 조건 
+X_train.isna().sum() < 100 
+
+
+# 수치형인 컬럼들은 평균 대체 (MinTemp, MaxTemp, Rainfall, WindSpeed9am, Humidity9am, Temp9am) 
+
+# 수치형만 있는 데이터프레임 추출 
+X_train_conti = X_train.select_dtypes(exclude = 'object').copy() 
+X_test_conti = X_test.select_dtypes(exclude = 'object').copy() 
+
+
+# 평균 대치 
+
+X_train_conti = X_train_conti.fillna(X_train_conti.mean()) 
+X_test_conti = X_test_conti.fillna(X_test_conti.mean()) 
+
+
+# 카테고리형인 컬럼은 최다빈도를 가지는 라벨로 대체 (RainToday) 
+
+# 카테고리형만 있는 데이터프레임 추출 
+X_train_category = X_train.select_dtypes('object').copy() 
+X_test_category = X_test.select_dtypes('object').copy()  
+
+
+# 최다라벨로 대체 
+mode = X_train_category.value_counts('RainToday').idxmax()  
+
+
+X_train_category = X_train_category.fillna(mode)
+X_test_category = X_test_category.fillna(mode) 
+
+
+# 두 데이터 프레임 다시 합치기 (수치형 작업한 것 + 카테고리형 작업한 것) 
+
+X_train = pd.concat([X_train_conti, X_train_category], axis=1) 
+X_test = pd.concat([X_test_conti,X_test_category], axis=1)  
+
+
+# 카테고리형 컬럼 전처리 : 별도 과정 불필요로 생략 
+
+# 상태 확인해보기 
+print(X_train.select_dtypes('object').nunique())
+
+
+print(X_test.select_dtypes('object').nunique())
+
+# 수치형 컬럼 전처리 : 별도 과정 불필요로 생략 
+
+
+# >>> 데이터 분할 
+
+# X_train과 y_train을 학습용 (X_TRAIN, y_TRAIN)과 검증용 (X_VAL, y_VAL)로 분할 
+# ( , , , ,) : 변수에 담기 
+
+from sklearn.model_selection import train_test_split  
+
+
+# X_train과 y_train을 학습용 (X_TRAIN, y_TRAIN)과 검증용 (X_VAL, y_VAL)로 분할 
+
+X_TRAIN, X_VAL, y_TRAIN, y_VAL = train_test_split(X_train, y_train, random_state=1234, test_size=0.3) 
+
+
+# 분할 후 shpae 확인 
+
+print(X_TRAIN.shape)
+
+print(X_VAL.shape)
+
+print(y_TRAIN.shape)
+
+print(y_VAL.shape)
+
+
+# 인코딩 - 원-핫 인코딩 수행 
+# 카테고리형 컬럼(object)에 대하여 원핫인코딩 수행 
+# 원핫인코딩 : 범주형 데이터를 숫자로 변환하여, 딥러닝 모델에 적용 가능하게 변환함 
+# (ex) 개 1000, 고양이 0100, 원숭이 0010, 돼지 0001 
+
+from sklearn.preprocessing import OneHotEncoder 
+
+
+# 인코딩 할 카테고리형(object) 컬럼만 별도 저장   
+# 트레인은 스플릿을 했지만 테스트는 안했으므로 소문자로 사용 
+
+X_TRAIN_category = X_TRAIN.select_dtypes('object').copy() 
+X_VAL_category = X_VAL.select_dtypes('object').copy() 
+X_TEST_category = X_test.select_dtypes('object').copy() 
+
+
+# 원-핫 인코딩 
+# 디폴트는 sparse = True이며 매트릭스 리턴 , sparse = False이면 배열 리턴 
+# fit 메서드: 모델을 학습시킬 때 사용함. // 머신러닝이 데이터에 머신러닝 모델을 맞추는 것(fit) 
+# transform: fit을 통해 세운 기준(모델)으로 맞춰서 변형하는 함수  
+
+enc = OneHotEncoder(sparse = False).fit(X_TRAIN_category)
+
+
+X_TRAIN_OH = enc.transform(X_TRAIN_category)
+X_VAL_OH = enc.transform(X_VAL_category) 
+X_TEST_OH = enc.transform(X_TEST_category) 
+
+
+# >>> 스케일링 
+# 스케일링 ;; 카테고리형이 아닌 것, 숫자 관련된 것. 수치형. 
+# StandardScaler(): 표준화. 평균이 0이고 분산 1인 정규분포 만드는 것. z-score  
+
+from sklearn.preprocessing import StandardScaler 
+
+
+# 스케일링할 컬럼만 별도 저장 
+# select_dtypes() 메서드의 exclude 옵션은 해당 dtype을 제외한 모든 dtypes를 추출할 때 사용 
+# 테스트는 스플릿이 안되어 있으므로 정의변수는 대문자, 할당 시에는 소문자 사용 
+
+X_TRAIN_conti = X_TRAIN.select_dtypes(exclude = 'object').copy() 
+X_VAL_conti = X_VAL.select_dtypes(exclude = 'object').copy() 
+X_TEST_conti = X_test.select_dtypes(exclude = 'object').copy() 
+
+
+# TRAIN 데이터 기준으로 스케일링 함 
+
+scale = StandardScaler().fit(X_TRAIN_conti) 
+
+
+# Z-점수 표준화 
+# ; transform에서 평균, 분산, 표준편차 등 가지고, 거기에 때리면서 구하면서 표준화 
+# transform: fit을 통해 세운 기준(모델)으로 맞춰서 변형하는 함수  
+
+X_TRAIN_STD = scale.transform(X_TRAIN_conti)
+X_VAL_STD = scale.transform(X_VAL_conti)
+X_TEST_STD = scale.transform(X_TEST_conti) 
+
+
+# >>> 입력 데이터셋 준비  
+
+import numpy as np 
+
+
+# 인코딩과 스케일링 된 넘파이 배열 연결  
+
+X_TRAIN = np.concatenate([X_TRAIN_OH, X_TRAIN_STD],axis = 1) 
+X_VAL = np.concatenate([X_VAL_OH, X_VAL_STD],axis = 1) 
+
+
+# 'Yes'와 'No'를 각각 1,0에 매핑 (yes와 no는 y_train 내에 있던 데이터) // (여기 작업예시 특징) 
+
+y_TRAIN = y_TRAIN['RainTomorrow'].map({'Yes':1, 'No':0})
+y_VAL = y_VAL['RainTomorrow'].map({'Yes':1, 'No':0}) 
+
+
+# y를 1차원 넘파이 배열로 평탄화 
+# ravel: 1차원 배열로 평평하게 펴주는 함수 
+
+# (참고) 
+# 딕셔너리는 key(), values() 
+# 그 중 키만 뽑을 때 : key()
+# 값만 뽑을 때 : values() 
+# 키, 값 쌍으로 뽑고 싶을 때 : items() 
+
+# 1차원 넘파이 배열로 평탄화 
+y_TRAIN = y_TRAIN.values.ravel() 
+y_VAL = y_VAL.values.ravel() 
+
+
+# >>> 모델 학습 
+
+from sklearn.ensemble import RandomForestClassifier 
+
+
+# 랜덤 포레스트 
+
+rf = RandomForestClassifier(n_estimators=500, max_depth=3, min_samples_leaf=10, max_features='sqrt', random_state=2022) 
+
+
+model_rf = rf.fit(X_TRAIN, y_TRAIN)
+
+# fit 메서드: 모델을 학습시킬 때 사용함. // 머신러닝이 데이터에 머신러닝 모델을 맞추는 것(fit) 
+
+
+# 성능평가(기준:AUC) 통한 모델 선정 // 단, 여기서는 랜덤포레스트만 사용함 
+
+from sklearn.metrics import roc_curve, auc 
+
+
+# 검증용 데이터셋을 통한 예측 
+# [:,1]는; 모든 행에 대해서, 두번째 열의 정보를 가져다 달라  
+
+score_rf = model_rf.predict_proba(X_VAL)[:,1] 
+
+
+## AUC 계산 
+
+# roc_curve 함수의 결과를 fpr, tpr, thresholds 변수로 받아주는 것 
+# fpr: false positive rate // tpr: true positive rate // thresholds: 임계값, 애매한 값을 분류할 기준이 필요, 이 기준을 임계값이라 함
+
+fpr, tpr, thresholds = roc_curve(y_VAL, score_rf) 
+
+
+auc_rf = auc(fpr, tpr) 
+
+# auc 값은 roc 곡선 밑 면적을 구한 것 // 1에  가까울 수록 좋은 수치, 0.5에 가까울수록 학습이 제대로 이루어지지 않은 모델 
+# AUC = Area Under Roc curve // ROC커브 = Receiver Operating Characteristic 
+
+
+print(auc_rf) 
+
+
+# 결과 제출하기 
+
+X_TEST = np.concatenate([X_TEST_OH, X_TEST_STD],axis = 1)
+
+y_score = model_rf.predict_proba(X_TEST)[:,1] 
+
+
+# 문제에서 요구하는 형태로 변환 
+# <제출형식> Date , RainTomorrow_prob 
+
+obj = {'Date':Date, 'RainTomorrow_prob':y_score} 
+
+result = pd.DataFrame(obj) 
+
+
+# 12345.csv로 저장하기
+# index = False 시 인덱스를 포함하지 않고 저장 
+
+result.to_csv("12345.csv",index = False)  
+
