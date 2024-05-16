@@ -85,11 +85,15 @@ y_train.isna().sum()
 
 # fare는 티겟요금을 의미하고, train에만 존재하므로 레코드를 삭제함 
 # 결측일 조건 
-cond_na = X_train['fare'].isna() 
+# cond_na = X_train['fare'].isna() 
 
 # 행 삭제 
-X_train = X_train[~cond_na]
-y_train = y_train[~cond_na]
+# X_train = X_train[~cond_na]
+# y_train = y_train[~cond_na]
+
+
+X_train = X_train.drop('fare', axis=1)
+X_test = X_test.drop('fare', axis=1) 
 
 
 # cabin은 선실번호를 의미하고 train은 레코드의 78%, test는 레코드의 76%가 결측이므로 컬럼을 삭제 
