@@ -1974,3 +1974,478 @@ result.to_csv("12345.csv",index = False)
 
 
 ================================================
+
+===============================================
+[Big Mo 1]
+
+----------------------------------------------
+
+# (문제 1) iris 데이터셋을 불러와 Sepal.Width 컬럼에 대해 
+Sepal.Width의 평균값을 기준으로 3배 표준편차 이상으로 떨어진 값들의 합을 구하여라
+
+import pandas as pd 
+
+exam1 = pd.read_csv(r'C:\빅데이터분석기사 실기 모의고사\data\모의고사\01회\iris.csv') 
+
+print(exam1.head())
+print(exam1.info())
+print(exam1.describe())
+
+
+Sepal_Width = exam1['Sepal.Width'] 
+# 대괄호 안에 홑따옴표  
+
+avg = Sepal_Width.mean() 
+
+std = Sepal_Width.std() 
+# 표준편차 구할 때 std 임 
+
+
+up = avg + std*3 
+
+down = avg - std*3 
+
+# 업이 플러스고 다운이 마이너스 
+
+cond1 = (Sepal_Width < down) | (Sepal_Width > up)
+
+result = Sepal_Width[cond1].sum() 
+# 컨디션 적용 시 대괄호 
+
+print(result) 
+
+----------------------------------------------
+
+# (문제 2) mtcars1 데이터셋을 불러와, disp 컬럼에 대해서 순위를 부여한 후, 
+# 1위부터 20위까지의 값들의 표준편차를 구하고 소수점 셋째자리에서 반올림하여 나타내어라. 
+# (단, 동점은 동일한 순위를 부여하되 상위 등수를 기준으로 하며 최댓값을 1위로 함) 
+
+
+import pandas as pd 
+
+exam2 = pd.read_csv(r'C:\빅데이터분석기사 실기 모의고사\data\모의고사\01회\mtcars1.csv') 
+
+print(exam2.head())
+print(exam2.info())
+print(exam2.describe())
+
+
+disp = exam2['disp'] 
+
+rank = disp.rank(method='min', ascending=False)  
+# 동점 동일한 순위 부여이므로 메또트는 민 적용 
+# 폴스의 에프는 대문자로 기재 
+
+
+# 랭크 1에서 20까지를 추리는게 필요함 
+rank20 = disp[rank <= 20] 
+
+
+result = round(rank20.std(), 2) 
+# 리졀트에 할당 필요
+
+print(result) 
+
+----------------------------------------------
+
+# (문제 3) Cars93 데이터셋을 불러와, 
+# '전체 레코드 수', '결측치가 있는 컬럼의 수', '전체 결측치 수', 
+# '결측치가 10개 이상인 컬럼들의 결측치가 있는 레코드만 삭제한 후의 전체 레코드 수'와 
+# '두 개 이상의 컬럼이 동시에 결측인 레코드의 행번호들의 합'을 구한 후 모두 합하여라.  
+
+
+import pandas as pd 
+
+exam3 = pd.read_csv(r'C:\빅데이터분석기사 실기 모의고사\data\모의고사\01회\Cars93.csv') 
+
+print(exam3.head())
+print(exam3.info())
+print(exam3.describe()) 
+
+
+# 전체 레코드 수 
+case1 = exam3.shape[0] 
+
+# 대괄호 영 
+# X_test.shape를 해보시면 (로우건수, 컬럼건수) 가 나옵니다. 그래서 X.shape[0]은 로우건수를 의미
+
+
+# 결측치가 있는 컬럼의 수 
+case2 = sum(exam3.isna().sum() != 0) 
+
+
+# 전체 결측치 수 
+case3 = sum(exam3.isna().sum()) 
+
+
+# '결측치가 10개 이상인 컬럼들의 결측치가 있는 레코드만 삭제한 후의 전체 레코드 수'
+cond10over = exam3.columns[exam3.isna().sum() > 10] 
+
+# 그 중에 결측치가 없는 컬럼의 수
+
+sub1 = exam3[cond10over].copy() 
+
+case4 = len(sub1.dropna()) 
+# na를 드랍하면 결측치가 없음 
+
+
+# '두 개 이상의 컬럼이 동시에 결측인 레코드의 행번호들의 합'
+
+# 조건을 먼저 셋팅. 인덱스 활용 
+
+rownm_2over = exam3.index[exam3.isna().sum(axis=1) >= 2] 
+
+
+# 행번호들을 리스트로 반환 
+
+sub2 = list(rownm_2over) 
+
+sub2
+
+case5 = sum(sub2) 
+
+result = case1 + case2 + case3 + case4 + case5 
+
+print(result) 
+
+===============================================
+
+===============================================	
+[Big Mo 2]
+
+----------------------------------------------
+
+# (문제 1) USArrests 데이터셋을 불러와, 
+# UrbanPop이 60 이상인 지역 중 Murder와 Assault의 합 대비 Assault의 비율이 0.05 이상인 레코드 수를 구하여라. 
+
+import pandas as pd
+
+exam2_1 = pd.read_csv(r'C:\빅데이터분석기사 실기 모의고사\data\모의고사\02회\USArrests.csv') 
+
+print(exam2_1.head())
+print(exam2_1.info())
+print(exam2_1.describe())
+
+
+exam2_1['MA'] = exam2_1['Murder'] + exam2_1['Assault']
+
+exam2_1['ratio'] = exam2_1['Assault'] / exam2_1['MA']
+
+
+cond1 = (exam2_1['UrbanPop'] >= 60) & (exam2_1['ratio'] >= 0.05) 
+
+result = exam2_1[cond1].shape[0]  
+
+print(result) 
+
+----------------------------------------------
+
+# (문제 2) swiss 데이터셋을 불러와, Fertility 컬럼에 대해서 내림차순으로 정렬한 후 
+# 정렬한 데이터를 기준으로 홀수번째 레코드들의 평균에서 짝수번째 레코드들의 평균을 뺀 값을 구하여라. 
+# (단, 첫번째 행에 있는 데이터를 1번으로 하고, 결과는 소수점 넷째 자리에서 반올림하여 표현) 
+
+import pandas as pd
+
+exam2 = pd.read_csv(r'C:\빅데이터분석기사 실기 모의고사\data\모의고사\02회\swiss.csv') 
+
+print(exam2.head())
+print(exam2.info())  
+# ; RangeIndex: 47
+print(exam2.describe())
+
+exam2.shape[0]
+
+
+sort = exam2['Fertility'].sort_values(ascending = False, ignore_index = True) 
+
+
+import numpy as np 
+
+idx = np.arange(1,48) 
+
+
+odd = (idx % 2 == 1)
+
+even = (idx % 2 == 0)  
+
+diff = sort[odd].mean() - sort[even].mean() 
+
+result = round(diff, 3) 
+# 반올림은 라운드 함수
+
+print(result) 
+
+----------------------------------------------
+
+# (문제 3) CO2 데이터셋을 불러와, 
+# Type컬럼이 Mississippi이면서 conc컬럼에서 백의 자리 또는 일의 자리가 5인 경우 레코드들의 수를 구하여라. 
+
+import pandas as pd
+
+exam3 = pd.read_csv(r'C:\빅데이터분석기사 실기 모의고사\data\모의고사\02회\CO2.csv') 
+
+print(exam3.head())
+print(exam3.info())
+print(exam3.describe()) 
+
+
+exam3['Type'].value_counts()
+
+
+exam3['Type'] = exam3['Type'].str.replace('/' , '') 
+
+case1 = ( exam3['Type'] == 'Mississippi') 
+
+
+hundred = (exam3['conc']//100 == 5) 
+
+one = exam3['conc'].astype('string').str.endswith('5') 
+
+case2 = hundred | one 
+
+
+result = exam3[case1 & case2].shape[0] 
+print(result) 
+
+===============================================
+
+===============================================	
+[Big Mo 3]
+
+----------------------------------------------
+
+# (문제 1) Rabbit 데이터셋을 불러와 'Dose 컬럼'의 제 3사분위수와 제2분위수를 구하고 
+# 두 값의 차이의 절댓값을 구한 후 소수점을 버린 값을 출력하여라. 
+
+import pandas as pd 
+
+exam1 = pd.read_csv(r'C:\빅데이터분석기사 실기 모의고사\data\모의고사\03회\Rabbit.csv')
+
+print(exam1.head())
+print(exam1.info())
+print(exam1.describe())
+
+q3 = exam1['Dose'].quantile(0.75)
+
+q2 = exam1['Dose'].median()  
+
+diff = abs(q3 - q2) 
+
+result = diff.astype('int64') 
+
+print(result)
+
+----------------------------------------------
+
+# (문제 2) Boston 데이터셋을 불러와 'medv 컬럼'에 대해서 동일한 폭으로 binning(구간화) 한 후 
+# 가장 많은 빈도를 가지는 구간을 산출하고 해당 구간 내 dis컬럼의 중앙값을 구하여라. 
+# (폭은 10을 기준으로 하고 소수점은 둘째 자리까지 나타내시오)  
+
+import pandas as pd
+
+exam2 = pd.read_csv(r'C:\빅데이터분석기사 실기 모의고사\data\모의고사\03회\Boston.csv') 
+
+print(exam2.head())
+print(exam2.info())
+print(exam2.describe())
+
+
+exam2['medv'].value_counts()
+# 이렇게 하면 50까지 나오는 걸 볼 수 있음 
+
+medv_cut = pd.cut(exam2['medv'], bins = [0, 10, 20, 30, 40, 50]) 
+
+
+mode = medv_cut.value_counts().idxmax() 
+
+cond = (medv_cut == mode) 
+
+
+median = exam2['dis'][cond].median()  
+
+result = round(median, 2) 
+
+print(result)  
+
+----------------------------------------------
+
+# (문제 3) Melanoma 데이터셋을 불러와 1번째~122번째 레코드와 123번째 이후 레코드로 데이터셋을 분리하고 
+# 각 데이터셋별로 'thickness 칼럼'을 z-score 정규화로 변환한 후 -1과 1 사이 값들의 중앙값을 각각 산출한 후, '합계'를 구하여라. 
+# (단, z-score 정규화 변환 계산에 사용되는 평균과 표준편차는 분리된 것과 관계 없이 
+# 1번째~122번째 레코드로 이루어진 데이터셋을 기준으로 하고, 
+# 출력 시 소수점 넷째자리'까지' 반올림하여 나타낼 것)
+
+
+import pandas as pd 
+
+exam3 = pd.read_csv(r'C:\빅데이터분석기사 실기 모의고사\data\모의고사\03회\Melanoma.csv')
+
+
+print(exam3.head())
+print(exam3.info())
+print(exam3.describe())
+
+
+df1 = exam3.loc[:123] 
+
+df2 = exam3.loc[123:] 
+
+
+avg = df1['thickness'].mean() 
+
+std = df1['thickness'].std() 
+
+
+z1 = (df1['thickness'] - avg)/std 
+
+z2 = (df2['thickness'] - avg)/std 
+
+
+sub_z1 = (z1 >= -1) & (z1 <= 1)
+
+sub_z2 = (z2 >= -1) & (z2 <= 1)
+
+
+med1 = sub_z1.median()
+
+med2 = sub_z2.median()
+
+
+result = round(med1 + med2, 4) 
+print(result) 
+
+===============================================	
+
+===============================================	
+[Big P 2]
+
+----------------------------------------------
+
+# (문제 1) mtcars2 데이터셋을 불러와 mpg 컬럼의 상위 10번째 값으로 상위 10개 값을 변환한 후 
+# drat가 4 이상인 값에 대해 mpg의 평균을 구하여라.
+
+import pandas as pd
+
+exam1 = pd.read_csv(r'C:\빅데이터분석기사 실기 모의고사\data\기출복원\02회\mtcars2.csv')
+
+print(exam1.head())
+print(exam1.info())
+print(exam1.describe())
+
+
+mpg = exam1['mpg'].copy() 
+
+drat = exam1['drat'].copy() 
+
+
+# 상위 10번째 값 
+tenth = mpg.sort_values(ascending=False, ignore_index=True)[9] 
+
+
+# 상위 10개 인덱스 
+idx = mpg.sort_values(ascending=False)[:10].index
+
+
+# 상위 10개 값 변경 
+mpg[idx] = tenth 
+
+
+# drat가 4이상일 때 mpg의 평균 
+avg_mpg = mpg[drat>=4].mean()  
+
+result = round(avg_mpg, 3)
+
+print(result)
+
+----------------------------------------------
+
+# (문제 2) 앞의 데이터셋(mtcars2)을 새로 불러와 첫 번째 행부터 순서대로 80%까지의 데이터를 훈련데이터로 추출한 후 
+# disp 컬럼의 결측값을 disp 컬럼의 중앙값으로 대체하고, 대체 전 후의 disp 변수의 표준편차 값의 차이를 구하여라.
+# (단, 차이는 빼는 순서와 관계없이 절대값을 취하여 표시하라)
+
+
+import pandas as pd 
+
+import numpy as np 
+
+exam2 = pd.read_csv(r'C:\빅데이터분석기사 실기 모의고사\data\기출복원\02회\mtcars2.csv')
+
+idx80 = np.floor(exam2.shape[0] * 0.8).astype('int') 
+
+
+# 80%가 되는 행 인덱스 번호 찾기 
+idx80 = np.floor(exam2.shape[0] * 0.8).astype('int') 
+# (round는 반올림, ceil은 올림, floor는 내림)
+
+# 훈련 데이터 추출 
+train = exam2[:idx80] 
+
+
+# disp 변수의 결측값을 중앙값으로 대체, 대체 전후 표준편차 
+
+# disp 컬럼 할당 
+disp_before = train['disp'].copy()  # 대체하지 않을 것 
+
+disp_after = train['disp'].copy()   # 대체할 것 
+
+
+# 대체 전의 중앙값과 표준편차 
+
+med_before = disp_before.median()
+
+std_before = disp_before.std() 
+
+
+# 결측치 중앙값 대체 
+disp_after = disp_after.fillna(med_before) 
+
+# 대체 후의 표준편차 
+std_after = disp_after.std() 
+
+
+# 차이 (표준편차 간)
+diff = abs(std_before - std_after) 
+
+result = round(diff, 3)
+
+print(result)
+
+----------------------------------------------
+
+# (문제 3) gehan 데이터셋을 불러와 time 컬럼에서 이상값의 합을 구하여라. 
+# (단, 이상값은 평균에서 1.5 표준편차 이상으로 벗어난 값으로 정의함) 
+
+import pandas as pd 
+
+exam3 = pd.read_csv(r'C:\빅데이터분석기사 실기 모의고사\data\기출복원\02회\gehan.csv') 
+
+print(exam3.head())
+print(exam3.info())
+
+
+# time 컬럼의 평균과 표준편차 (쭉) 
+
+time = exam3['time']
+
+avg_time = time.mean()
+
+std_time = time.std() 
+
+
+
+# 평균에서 1.5 표준편차 구간 
+
+low = avg_time - std_time*1.5 
+
+up = avg_time + std_time*1.5 
+
+
+# 이상치 
+outlier = time[(time < low) | (time > up)] 
+
+
+result = sum(outlier) 
+
+print(result)
+
+===============================================	
